@@ -1,6 +1,33 @@
-const urls = ['*://*.facebook.com/', '*://*.twitter.com/', '*://*.youtube.com/', '*://*.instagram.com/']
+const AGENCY_DECREASING_URLS = [
+  '*://*.facebook.com/',
+  '*://*.twitter.com/',
+  '*://*.youtube.com/',
+  '*://*.instagram.com/',
+]
+const EXCLUDED_URLS = ['chrome://']
 const STORAGE = chrome.storage.local
+const BASE_URL = 'http://www.theagencycoin.com/api'
+
 let active = {}
+
+async function postBalance(amount = 0) {
+  const body = {
+    wallet: '0x036dB8d2eacF572876247236D766A3A706Bd33cA',
+    amount,
+  }
+
+  const response = await fetch(`${BASE_URL}/balance`, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  })
+  const data = await response.json()
+
+  console.log(data)
+}
 
 async function updateStorage(active, seconds) {
   const currentDate = new Date().toISOString().substr(0, 10)
@@ -14,15 +41,18 @@ async function updateStorage(active, seconds) {
       time: newTime,
     },
   }
+  const balanceToChange = currentHost?.agencyDecreasing ? -seconds : seconds
 
   const newData = {
     ...data,
     ...newHost,
   }
 
-  console.log(newData)
+  console.log(`${currentHost.name} - decreasing: ${currentHost?.agencyDecreasing}`)
+  console.log(balanceToChange)
 
   saveToStorage(currentDate, newData)
+  postBalance(balanceToChange)
 }
 
 function saveToStorage(key, value) {
@@ -70,16 +100,21 @@ async function setActive() {
     const { url } = activeTab
     let host = new URL(url).hostname
     host = host.replace('www.', '').replace('.com', '')
+    let agencyDecreasing = false
+    const includesAgencyDecreasingHost = AGENCY_DECREASING_URLS.some((each) => each.includes(host))
+    const includesExcludedHost = EXCLUDED_URLS.some((each) => each.includes(host))
 
-    if (urls.some((each) => each.includes(host))) {
-      if (active.name !== host) {
-        end()
+    if (includesExcludedHost) return
+    if (includesAgencyDecreasingHost) agencyDecreasing = true
 
-        active = {
-          name: host,
-          faviconUrl: activeTab.favIconUrl,
-          time: Date.now(),
-        }
+    if (active.name !== host) {
+      end()
+
+      active = {
+        name: host,
+        faviconUrl: activeTab.favIconUrl,
+        time: Date.now(),
+        agencyDecreasing,
       }
     }
   }
