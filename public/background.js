@@ -6,14 +6,14 @@ const AGENCY_DECREASING_URLS = [
 ]
 const EXCLUDED_URLS = ['chrome://']
 const STORAGE = chrome.storage.local
-const BASE_URL = 'http://www.theagencycoin.com/api'
+const BASE_URL = 'https://www.theagencycoin.com/api'
 
 let active = {}
 
 async function postBalance(amount = 0) {
   const body = {
     wallet: '0x036dB8d2eacF572876247236D766A3A706Bd33cA',
-    amount,
+    amount: String(amount * 10e18),
   }
 
   const response = await fetch(`${BASE_URL}/balance`, {
@@ -24,9 +24,8 @@ async function postBalance(amount = 0) {
     },
     body: JSON.stringify(body),
   })
-  const data = await response.json()
 
-  console.log(data)
+  console.log('status:', response.status)
 }
 
 async function updateStorage(active, seconds) {
@@ -48,7 +47,7 @@ async function updateStorage(active, seconds) {
     ...newHost,
   }
 
-  console.log(`${currentHost.name} - decreasing: ${currentHost?.agencyDecreasing}`)
+  console.log(`${currentHost?.name} - decreasing: ${currentHost?.agencyDecreasing}`)
   console.log(balanceToChange)
 
   saveToStorage(currentDate, newData)
@@ -102,7 +101,7 @@ async function setActive() {
     host = host.replace('www.', '').replace('.com', '')
     let agencyDecreasing = false
     const includesAgencyDecreasingHost = AGENCY_DECREASING_URLS.some((each) => each.includes(host))
-    const includesExcludedHost = EXCLUDED_URLS.some((each) => each.includes(host))
+    const includesExcludedHost = EXCLUDED_URLS.some((each) => url.includes(each))
 
     if (includesExcludedHost) return
     if (includesAgencyDecreasingHost) agencyDecreasing = true

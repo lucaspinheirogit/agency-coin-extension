@@ -5,7 +5,7 @@ import toast from 'react-hot-toast'
 import Logo from '../assets/logo.png'
 import { Website } from './Website'
 
-const BASE_URL = 'http://www.theagencycoin.com/api'
+const BASE_URL = 'https://www.theagencycoin.com/api'
 
 export function App() {
   const [data, setData] = useState<any>()
@@ -47,14 +47,16 @@ export function App() {
     })
   }
 
-  const websites = data && Object.keys(data).map((key) => {
-    const value = data[key]
+  const websites =
+    data &&
+    Object.keys(data).map((key) => {
+      const value = data[key]
 
-    return {
-      key,
-      ...value,
-    }
-  })
+      return {
+        key,
+        ...value,
+      }
+    })
 
   const websitesSortedByTimeDesc = websites?.sort((a: any, b: any) => b.time - a.time)
 
@@ -62,7 +64,7 @@ export function App() {
     <Container>
       <LogoImage src={Logo} alt="logo" />
       <LogoText>Agency coins</LogoText>
-      <p style={{ margin: 0 }}>Balance: {balance}</p>
+      <p style={{ margin: 0 }}>Balance: {balance / 10e18}</p>
 
       <Form onSubmit={handleSubmit}>
         <Input ref={inputRef} disabled={!!wallet} required placeholder="wallet address" />
