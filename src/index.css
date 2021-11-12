@@ -1,0 +1,22 @@
+body {
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  width: 400px;
+  height: 600px;
+}
+
+h1 {
+  background-clip: text;
+}
+
+#root {
+  display: flex;
+  justify-content: center;
+  height: 100%;
+}
+
+#root > div {
+  padding: 1rem;
+}

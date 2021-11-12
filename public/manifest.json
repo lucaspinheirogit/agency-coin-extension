@@ -1,0 +1,19 @@
+{
+  "manifest_version": 2,
+  "name": "Agency Coin Screen Time",
+  "description": "Rewards you with agency coins based on your agency increasing use of the browser",
+  "short_name": "Agency Coin Screen Time",
+  "version": "1.0",
+  "browser_action": {
+    "default_popup": "index.html"
+  },
+  "icons": {
+    "16": "logo192.png",
+    "48": "logo192.png",
+    "128": "logo192.png"
+  },
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "permissions": ["activeTab", "tabs", "storage"]
+}
