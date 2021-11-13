@@ -3,13 +3,29 @@ import styled from 'styled-components'
 import toast from 'react-hot-toast'
 
 import Logo from '../assets/logo.png'
+import logoutImage from '../assets/logout.png'
 import { Website } from './Website'
 
 const BASE_URL = 'https://www.theagencycoin.com/api'
+const STORAGE = chrome.storage.local
+
+function getFromStorage(key: string): Promise<any> {
+  return new Promise((resolve) => {
+    STORAGE.get(key, (result) => (result[key] ? resolve(result[key]) : resolve(null)))
+  })
+}
+
+function saveToStorage(key: string, value: any) {
+  return new Promise((resolve) => {
+    STORAGE.set({ [key]: value }, () => {
+      resolve(true)
+    })
+  })
+}
 
 export function App() {
   const [data, setData] = useState<any>()
-  const [wallet, setWallet] = useState('')
+  const [wallet, setWallet] = useState<any>('')
   const [balance, setBalance] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -17,17 +33,34 @@ export function App() {
     getLocalStorageData()
   }, [])
 
-  function getLocalStorageData() {
-    if (!chrome?.storage?.local) return
+  useEffect(() => {
+    getBalance()
+  }, [wallet])
+
+  async function getLocalStorageData() {
+    if (!STORAGE) return
 
     const currentDate = new Date().toISOString().substr(0, 10)
 
-    chrome.storage.local.get(currentDate, (result) => setData(result[currentDate]))
+    const data = await getFromStorage(currentDate)
+    const walletData = await getFromStorage('wallet')
+    const wallet = walletData?.wallet
+
+    if (data) setData(data)
+    if (wallet) {
+      setWallet(wallet)
+      if (inputRef.current) inputRef.current.value = wallet
+    }
   }
 
-  function handleSubmit(e: React.SyntheticEvent) {
-    e.preventDefault()
-    const wallet = inputRef?.current?.value || ''
+  async function getBalance() {
+    if (!wallet) return
+
+    toast.promise(fetch(`${BASE_URL}/balance/${wallet}`), {
+      loading: 'Connecting...',
+      success: onSuccess,
+      error: 'Something went wrong, try again later!',
+    })
 
     function onSuccess(response: any) {
       ;(async () => {
@@ -35,16 +68,25 @@ export function App() {
         setBalance(data?.balance)
       })()
 
-      setWallet(wallet)
-
       return 'Wallet successfully conected!'
     }
+  }
 
-    toast.promise(fetch(`${BASE_URL}/balance/${wallet}`), {
-      loading: 'Connect...',
-      success: onSuccess,
-      error: 'Something went wrong, try again later!',
-    })
+  async function handleSubmit(e: React.SyntheticEvent) {
+    e.preventDefault()
+
+    const wallet = inputRef?.current?.value || ''
+    if (STORAGE) await saveToStorage('wallet', { wallet })
+    setWallet(wallet)
+  }
+
+  async function handleLogout() {
+    const wallet = ''
+
+    if (inputRef.current) inputRef.current.value = wallet
+    if (STORAGE) await saveToStorage('wallet', { wallet })
+    setWallet(wallet)
+    setBalance(0)
   }
 
   const websites =
@@ -78,6 +120,8 @@ export function App() {
       </WebsitesContainer>
 
       <Disclaimer>Copyright © Agency Enterprise Studio 2021</Disclaimer>
+
+      {wallet && <LogoutImage onClick={handleLogout} src={logoutImage} alt="logout" title="disconnect wallet" />}
     </Container>
   )
 }
@@ -144,4 +188,13 @@ const Disclaimer = styled.p`
   margin-top: auto;
   font-size: 12px;
   font-weight: 300;
+`
+
+const LogoutImage = styled.img`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
 `

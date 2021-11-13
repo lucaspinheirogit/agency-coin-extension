@@ -1,12 +1,14 @@
 import styled from 'styled-components'
 
+import placeholderImage from '../assets/placeholder.jpeg'
+
 export function Website(props: any) {
   const { website } = props
 
   return (
     <Container>
       <LogoContainer>
-        <img width={24} height={24} src={website.faviconUrl} alt={website.name} />
+        <img width={24} height={24} src={website.faviconUrl || placeholderImage} alt={website.name} />
         <Name>{website.name}</Name>
       </LogoContainer>
       <Time>{website.time} seconds</Time>
@@ -18,7 +20,7 @@ const Container = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid rgb(252,178,83);
+  border-bottom: 1px solid rgb(252, 178, 83);
   padding: 0.5rem 0;
 `
 

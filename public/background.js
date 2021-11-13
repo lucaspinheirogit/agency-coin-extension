@@ -11,8 +11,12 @@ const BASE_URL = 'https://www.theagencycoin.com/api'
 let active = {}
 
 async function postBalance(amount = 0) {
+  const walletData = await getFromStorage('wallet')
+  const wallet = walletData?.wallet
+  if (!wallet) return
+
   const body = {
-    wallet: '0x036dB8d2eacF572876247236D766A3A706Bd33cA',
+    wallet,
     amount: String(amount * 10e18),
   }
 
@@ -25,13 +29,13 @@ async function postBalance(amount = 0) {
     body: JSON.stringify(body),
   })
 
-  console.log('status:', response.status)
+  console.log('[POST] balance - status:', response.status)
 }
 
 async function updateStorage(active, seconds) {
   const currentDate = new Date().toISOString().substr(0, 10)
   const data = await getFromStorage(currentDate)
-  const currentHost = data[active.name]
+  const currentHost = data[active.name] || { ...active, time: 0 }
 
   const newTime = currentHost ? (currentHost.time += seconds) : seconds
   const newHost = {
@@ -47,8 +51,8 @@ async function updateStorage(active, seconds) {
     ...newHost,
   }
 
-  console.log(`${currentHost?.name} - decreasing: ${currentHost?.agencyDecreasing}`)
-  console.log(balanceToChange)
+  console.log('-------------')
+  console.log(`${currentHost?.name}, change: ${balanceToChange}`)
 
   saveToStorage(currentDate, newData)
   postBalance(balanceToChange)
