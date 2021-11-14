@@ -106,7 +106,7 @@ export function App() {
     <Container>
       <LogoImage src={Logo} alt="logo" />
       <LogoText>Agency coins</LogoText>
-      <p style={{ margin: 0 }}>Balance: {balance / 10e18}</p>
+      <p style={{ margin: 0 }}>Balance: {balance}</p>
 
       <Form onSubmit={handleSubmit}>
         <Input ref={inputRef} disabled={!!wallet} required placeholder="wallet address" />
